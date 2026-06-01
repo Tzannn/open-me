@@ -40,7 +40,7 @@ At the very top of the `<style>` section in `index.html` you'll see `:root { --p
 Change those colour codes to recolour the whole app.
 
 ## ✨ Features
-- The **No** button runs away from the cursor (and from taps on mobile) — and each time it dodges, the **Yes** button grows bigger and bigger until it almost fills the screen. Only Yes can be clicked!
+- The **Yes** button is a cute puppy that **chases her cursor** — wherever she points, it follows, so she can't avoid pressing it 🥺 (the **No** button also runs away). Turn it off with `ask.yesFollowsCursor: false` in CONFIG.
 - Falling-hearts celebration when she says yes.
 - A pink calendar to pick the date + a time picker.
 - Multi-select food picker (9 choices — easy to add more).

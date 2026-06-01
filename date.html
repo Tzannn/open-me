@@ -198,6 +198,58 @@
   @keyframes pop { 0% { transform: scale(.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
   .hidden { display: none !important; }
 
+  /* cute puppy-eyes "Yes" button (it chases her cursor 🥺) */
+  .yes-btn {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 13px 34px 15px;
+    line-height: 1;
+  }
+  .yes-btn::before, .yes-btn::after {           /* floppy ears */
+    content: "";
+    position: absolute;
+    top: -14px;
+    width: 23px; height: 30px;
+    background: var(--pink);
+    border-radius: 60% 60% 50% 50%;
+    box-shadow: 0 3px 7px rgba(231,90,133,.28);
+  }
+  .yes-btn::before { left: 17px;  transform: rotate(-26deg); }
+  .yes-btn::after  { right: 17px; transform: rotate(26deg); }
+  .puppy-eyes { display: flex; gap: 11px; position: relative; z-index: 1; }
+  .puppy-eyes .eye {
+    position: relative;
+    width: 19px; height: 23px;
+    background: #fff;
+    border-radius: 50%;
+    animation: puppyBlink 4.5s infinite;
+  }
+  .puppy-eyes .eye::after {                      /* pupil */
+    content: "";
+    position: absolute;
+    left: 50%; bottom: 3px;
+    transform: translateX(-50%);
+    width: 12px; height: 12px;
+    background: #4a3540;
+    border-radius: 50%;
+  }
+  .puppy-eyes .shine {                           /* sparkle */
+    position: absolute;
+    top: 4px; left: 4px;
+    width: 6px; height: 6px;
+    background: #fff;
+    border-radius: 50%;
+    z-index: 2;
+  }
+  .yes-label { font-weight: 800; font-size: 19px; color: #fff; position: relative; z-index: 1; }
+  @keyframes puppyBlink {
+    0%, 92%, 100% { transform: scaleY(1); }
+    96% { transform: scaleY(0.12); }
+  }
+
   /* ---------- calendar ---------- */
   .panel {
     background: #fff;
@@ -378,7 +430,13 @@
       <h1 id="askHeading"></h1>
       <p class="subtitle" id="askSubtitle"></p>
       <div class="btn-row">
-        <button class="btn big" id="yesBtn">Yes</button>
+        <button class="btn yes-btn" id="yesBtn">
+          <span class="puppy-eyes" aria-hidden="true">
+            <span class="eye"><span class="shine"></span></span>
+            <span class="eye"><span class="shine"></span></span>
+          </span>
+          <span class="yes-label" id="yesLabel">Yes</span>
+        </button>
         <button class="btn ghost" id="noBtn">No</button>
       </div>
     </div>
@@ -508,10 +566,9 @@ const CONFIG = {
       "No", "are you sure?", "really?", "think again 🥺",
       "don't be shy", "pleaseeee", "you can't catch me", "just say yes 💕"
     ],
-    // each time the No button runs away, the Yes button grows by yesGrow,
-    // up to yesMaxScale (big enough to almost fill the screen)
-    yesGrow: 0.6,
-    yesMaxScale: 14,
+    // the Yes button becomes a cute puppy that chases her cursor, so she
+    // literally cannot avoid pressing it 🥺 (set to false to turn this off)
+    yesFollowsCursor: true,
   },
 
   /* ---- STEP 1b: After she says YES ---- */
@@ -642,7 +699,7 @@ function burstHearts(count) {
 /* ===================================================================== */
 $("askHeading").textContent     = CONFIG.ask.heading;
 $("askSubtitle").textContent    = CONFIG.ask.subtitle;
-$("yesBtn").textContent         = CONFIG.ask.yes;
+$("yesLabel").textContent       = CONFIG.ask.yes;
 $("noBtn").textContent          = CONFIG.ask.no;
 $("celebrateHeading").textContent  = CONFIG.celebrate.heading;
 $("celebrateSubtitle").textContent = CONFIG.celebrate.subtitle;
@@ -652,7 +709,8 @@ renderPhoto("celebratePhoto", CONFIG.photos.celebrate);
 const yesBtn = $("yesBtn");
 const noBtn  = $("noBtn");
 let teaseIndex = 0;
-let yesScale = 1;
+let followActive = false;
+let saidYes = false;
 
 function dodge() {
   // first time: detach from layout so it can roam freely
@@ -670,13 +728,6 @@ function dodge() {
   // cheeky changing label
   teaseIndex = (teaseIndex + 1) % CONFIG.ask.noTeases.length;
   noBtn.textContent = CONFIG.ask.noTeases[teaseIndex];
-
-  // make "Yes" grow bigger and bigger — until it almost fills the screen
-  yesScale = Math.min(yesScale + CONFIG.ask.yesGrow, CONFIG.ask.yesMaxScale);
-  yesBtn.style.position = "relative";
-  yesBtn.style.zIndex = "60";
-  yesBtn.style.transformOrigin = "center center";
-  yesBtn.style.transform = "scale(" + yesScale + ")";
 }
 
 ["mouseenter", "mouseover", "pointerenter"].forEach(ev =>
@@ -687,11 +738,52 @@ noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); dodge(); }, { 
 noBtn.addEventListener("click", (e) => { e.preventDefault(); dodge(); });
 
 yesBtn.addEventListener("click", () => {
+  saidYes = true;          // stop the chase
+  followActive = false;
   $("askBlock").classList.add("hidden");
   $("celebrateBlock").classList.remove("hidden");
   noBtn.style.display = "none";
   burstHearts(40);
 });
+
+/* ---------- the cute part: the Yes puppy chases her cursor 🥺 ---------- */
+const hasMouse = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+let ptrX = window.innerWidth / 2, ptrY = window.innerHeight / 2;
+let curX = 0, curY = 0;
+
+function startFollow() {
+  if (followActive || saidYes || !CONFIG.ask.yesFollowsCursor) return;
+  followActive = true;
+  const r = yesBtn.getBoundingClientRect();
+  curX = r.left; curY = r.top;
+  yesBtn.style.position = "fixed";
+  yesBtn.style.margin = "0";
+  yesBtn.style.zIndex = "70";
+  requestAnimationFrame(followLoop);
+}
+function followLoop() {
+  if (!followActive) return;
+  const w = yesBtn.offsetWidth, h = yesBtn.offsetHeight, pad = 6;
+  const tx = Math.min(Math.max(ptrX - w / 2, pad), window.innerWidth  - w - pad);
+  const ty = Math.min(Math.max(ptrY - h / 2, pad), window.innerHeight - h - pad);
+  curX += (tx - curX) * 0.2;   // smooth glide toward the cursor
+  curY += (ty - curY) * 0.2;
+  yesBtn.style.left = curX + "px";
+  yesBtn.style.top  = curY + "px";
+  requestAnimationFrame(followLoop);
+}
+// follow the mouse (desktop) ...
+document.addEventListener("mousemove", (e) => {
+  ptrX = e.clientX; ptrY = e.clientY;
+  if (hasMouse) startFollow();
+});
+// ... and follow her finger if she drags on a touchscreen
+document.addEventListener("touchmove", (e) => {
+  const t = e.touches[0];
+  if (!t) return;
+  ptrX = t.clientX; ptrY = t.clientY;
+  startFollow();
+}, { passive: true });
 
 /* ===================================================================== */
 /*   STEP 2 — calendar + time                                            */
