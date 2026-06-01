@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>A little question for you 💕</title>
+
+<!-- Cute fonts (loads from internet; has nice fallbacks if offline) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
+
+<!-- ============================================================= -->
+<!--                                                               -->
+<!--   💖  EDIT EVERYTHING IN THE CONFIG SECTION (in the script    -->
+<!--       near the bottom of this file). Look for: const CONFIG    -->
+<!--       You can change every word, heading, emoji, food, and     -->
+<!--       add your photos there. No coding needed!                 -->
+<!--                                                               -->
+<!--   🎨  To change the colours, edit the :root variables below.   -->
+<!--                                                               -->
+<!-- ============================================================= -->
+
+<style>
+  /* ---------- 🎨 THEME COLOURS (change these if you like) ---------- */
+  :root {
+    --pink-deep:  #e75a85;   /* main accent / buttons */
+    --pink:       #ff7aa8;   /* bright pink */
+    --pink-soft:  #ffd1e0;   /* soft pink */
+    --pink-mist:  #ffe6f0;   /* very light pink */
+    --cream:      #fff7fb;   /* card background */
+    --text:       #5d3a47;   /* main text colour */
+    --text-soft:  #97697a;   /* lighter text */
+    --shadow:     0 18px 50px rgba(231, 90, 133, 0.22);
+    --radius:     28px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'Quicksand', 'Segoe UI', system-ui, sans-serif;
+    color: var(--text);
+    background: linear-gradient(160deg, #ffe9f3 0%, #ffd6e8 45%, #ffe3d6 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* floating background hearts */
+  .bg-hearts {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .bg-hearts span {
+    position: absolute;
+    bottom: -40px;
+    font-size: 22px;
+    opacity: 0.5;
+    animation: floatUp linear infinite;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
+    10%  { opacity: .55; }
+    90%  { opacity: .55; }
+    100% { transform: translateY(-115vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* ---------- card ---------- */
+  .card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 560px;
+    background: var(--cream);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 40px 34px 36px;
+    text-align: center;
+    border: 2px solid #ffffff;
+  }
+
+  /* progress dots */
+  .progress {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 22px;
+  }
+  .progress .dot {
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    background: var(--pink-soft);
+    transition: all .35s ease;
+  }
+  .progress .dot.active {
+    background: var(--pink-deep);
+    transform: scale(1.25);
+    box-shadow: 0 0 0 4px rgba(231,90,133,.18);
+  }
+
+  h1 {
+    font-family: 'Pacifico', 'Quicksand', cursive;
+    font-weight: 400;
+    color: var(--pink-deep);
+    line-height: 1.25;
+    font-size: clamp(28px, 6vw, 40px);
+    margin-bottom: 10px;
+  }
+  h2 {
+    font-family: 'Pacifico', 'Quicksand', cursive;
+    font-weight: 400;
+    color: var(--pink-deep);
+    font-size: clamp(24px, 5.4vw, 34px);
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+  .subtitle { color: var(--text-soft); font-size: 16px; margin-bottom: 22px; }
+  .desc     { color: var(--text-soft); font-size: 14.5px; margin-top: 6px; }
+
+  /* ---------- photo ---------- */
+  .photo {
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto 22px;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 4px solid #fff;
+    box-shadow: 0 10px 28px rgba(231,90,133,.18);
+  }
+  .photo img { display: block; width: 100%; height: auto; }
+  .photo.placeholder {
+    aspect-ratio: 4 / 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: repeating-linear-gradient(45deg, var(--pink-mist), var(--pink-mist) 14px, #fff0f6 14px, #fff0f6 28px);
+    border: 3px dashed var(--pink-soft);
+    color: var(--text-soft);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .photo.placeholder .big { font-size: 34px; }
+  .photo.small { max-width: 240px; }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 18px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--pink) 0%, var(--pink-deep) 100%);
+    border: none;
+    border-radius: 999px;
+    padding: 15px 38px;
+    cursor: pointer;
+    box-shadow: 0 10px 22px rgba(231,90,133,.35);
+    transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 14px 28px rgba(231,90,133,.45); }
+  .btn:active { transform: translateY(0) scale(.99); }
+  .btn.ghost {
+    background: #fff;
+    color: var(--pink-deep);
+    box-shadow: inset 0 0 0 2px var(--pink-soft);
+  }
+  .btn.big { font-size: 20px; padding: 17px 46px; }
+
+  .btn-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
+
+  .back-link {
+    display: inline-block;
+    margin-top: 18px;
+    color: var(--text-soft);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+  }
+  .back-link:hover { color: var(--pink-deep); }
+
+  /* ---------- step 1: yes / no ---------- */
+  #noBtn { transition: left .12s ease, top .12s ease; }
+  .celebrate { animation: pop .5s cubic-bezier(.2,1.4,.4,1) both; }
+  @keyframes pop { 0% { transform: scale(.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  .hidden { display: none !important; }
+
+  /* ---------- calendar ---------- */
+  .panel {
+    background: #fff;
+    border-radius: 22px;
+    padding: 18px;
+    box-shadow: 0 8px 22px rgba(231,90,133,.12);
+    margin: 10px 0 4px;
+  }
+  .cal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .cal-head .month { font-weight: 700; font-size: 18px; color: var(--pink-deep); }
+  .cal-nav {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: none; cursor: pointer; font-size: 18px; font-weight: 700;
+    background: var(--pink-mist); color: var(--pink-deep);
+    transition: background .15s;
+  }
+  .cal-nav:hover { background: var(--pink-soft); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .cal-dow { font-size: 12px; font-weight: 700; color: var(--text-soft); padding: 4px 0; }
+  .cal-day {
+    aspect-ratio: 1 / 1;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, transform .1s;
+  }
+  .cal-day:hover:not(.disabled):not(.empty) { background: var(--pink-mist); transform: scale(1.08); }
+  .cal-day.disabled { color: #d9c4cc; cursor: not-allowed; }
+  .cal-day.empty { cursor: default; }
+  .cal-day.today { box-shadow: inset 0 0 0 2px var(--pink-soft); }
+  .cal-day.selected {
+    background: linear-gradient(135deg, var(--pink) 0%, var(--pink-deep) 100%);
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(231,90,133,.4);
+  }
+
+  .field-label { font-weight: 700; color: var(--text); font-size: 16px; margin-top: 18px; text-align: left; }
+
+  /* time picker */
+  .time-row { display: flex; gap: 10px; justify-content: center; align-items: center; margin-top: 6px; flex-wrap: wrap; }
+  select.time-select {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--pink-deep);
+    background: #fff;
+    border: 2px solid var(--pink-soft);
+    border-radius: 14px;
+    padding: 12px 14px;
+    cursor: pointer;
+    outline: none;
+  }
+  select.time-select:focus { border-color: var(--pink-deep); }
+  .time-colon { font-size: 22px; font-weight: 800; color: var(--pink-deep); }
+
+  /* ---------- step 3: food ---------- */
+  .food-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 8px 0 6px;
+  }
+  @media (max-width: 460px) { .food-grid { grid-template-columns: repeat(2, 1fr); } }
+  .food-card {
+    position: relative;
+    background: #fff;
+    border: 2.5px solid var(--pink-mist);
+    border-radius: 20px;
+    padding: 18px 8px 14px;
+    cursor: pointer;
+    transition: transform .12s ease, border-color .15s, box-shadow .15s, background .15s;
+    user-select: none;
+  }
+  .food-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(231,90,133,.16); }
+  .food-card .emoji { font-size: 40px; line-height: 1; }
+  .food-card .name { display: block; margin-top: 8px; font-weight: 700; font-size: 15px; }
+  .food-card.selected {
+    border-color: var(--pink-deep);
+    background: var(--pink-mist);
+    box-shadow: 0 10px 22px rgba(231,90,133,.22);
+  }
+  .food-card .check {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--pink-deep);
+    color: #fff;
+    font-size: 14px; font-weight: 800;
+    display: none;
+    align-items: center; justify-content: center;
+  }
+  .food-card.selected .check { display: flex; }
+
+  /* ---------- summary ---------- */
+  .summary-box {
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px 22px;
+    box-shadow: 0 8px 22px rgba(231,90,133,.12);
+    text-align: left;
+    margin: 6px 0 18px;
+  }
+  .summary-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px dashed var(--pink-soft); }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row .ico { font-size: 24px; }
+  .summary-row .label { font-size: 13px; color: var(--text-soft); font-weight: 600; }
+  .summary-row .value { font-size: 17px; font-weight: 700; color: var(--text); }
+  .food-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .food-chip {
+    background: var(--pink-mist);
+    color: var(--pink-deep);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+
+  .hint {
+    color: var(--pink-deep);
+    font-weight: 700;
+    font-size: 14px;
+    height: 18px;
+    margin: 10px 0 2px;
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .hint.show { opacity: 1; }
+  .shake { animation: shake .4s; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+
+  /* falling hearts burst */
+  .fall {
+    position: fixed;
+    top: -40px;
+    z-index: 5;
+    pointer-events: none;
+    font-size: 26px;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(540deg); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-hearts" id="bgHearts"></div>
+
+<div class="card">
+  <!-- progress dots -->
+  <div class="progress" id="progress">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+
+  <!-- ============ STEP 1: THE QUESTION ============ -->
+  <section id="step1">
+    <div id="askBlock">
+      <h1 id="askHeading"></h1>
+      <p class="subtitle" id="askSubtitle"></p>
+      <div class="btn-row">
+        <button class="btn big" id="yesBtn">Yes</button>
+        <button class="btn ghost" id="noBtn">No</button>
+      </div>
+    </div>
+
+    <div id="celebrateBlock" class="hidden celebrate">
+      <div id="celebratePhoto"></div>
+      <h1 id="celebrateHeading"></h1>
+      <p class="subtitle" id="celebrateSubtitle"></p>
+      <button class="btn big" data-next="2" id="celebrateNext">Next</button>
+    </div>
+  </section>
+
+  <!-- ============ STEP 2: DATE & TIME ============ -->
+  <section id="step2" class="hidden">
+    <h2 id="dtHeading"></h2>
+    <p class="subtitle" id="dtSubtitle"></p>
+
+    <div class="field-label" id="dateLabel"></div>
+    <p class="desc" id="dateDesc"></p>
+    <div class="panel">
+      <div class="cal-head">
+        <button class="cal-nav" id="calPrev">‹</button>
+        <div class="month" id="calMonth"></div>
+        <button class="cal-nav" id="calNext">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <div class="field-label" id="timeLabel"></div>
+    <p class="desc" id="timeDesc"></p>
+    <div class="time-row">
+      <select class="time-select" id="selHour"></select>
+      <span class="time-colon">:</span>
+      <select class="time-select" id="selMin"></select>
+      <select class="time-select" id="selAmpm">
+        <option>AM</option>
+        <option>PM</option>
+      </select>
+    </div>
+
+    <div class="hint" id="dtHint"></div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn big" data-next="3" id="dtNext">Nextttt</button>
+    </div>
+    <button class="back-link" data-back="1">← back</button>
+  </section>
+
+  <!-- ============ STEP 3: FOOD ============ -->
+  <section id="step3" class="hidden">
+    <h2 id="foodHeading"></h2>
+    <p class="subtitle" id="foodSubtitle"></p>
+    <div class="food-grid" id="foodGrid"></div>
+    <div class="hint" id="foodHint"></div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn big" data-next="4" id="foodNext">Next</button>
+    </div>
+    <button class="back-link" data-back="2">← back</button>
+  </section>
+
+  <!-- ============ STEP 4: SUMMARY ============ -->
+  <section id="step4" class="hidden">
+    <h2 id="sumHeading"></h2>
+    <p class="subtitle" id="sumSubtitle"></p>
+
+    <div class="summary-box">
+      <div class="summary-row">
+        <div class="ico" id="sumDateIco">📅</div>
+        <div>
+          <div class="label" id="sumDateLabel">Date</div>
+          <div class="value" id="sumDateValue">—</div>
+        </div>
+      </div>
+      <div class="summary-row">
+        <div class="ico" id="sumTimeIco">⏰</div>
+        <div>
+          <div class="label" id="sumTimeLabel">Time</div>
+          <div class="value" id="sumTimeValue">—</div>
+        </div>
+      </div>
+      <div class="summary-row">
+        <div class="ico" id="sumFoodIco">🍽️</div>
+        <div style="flex:1;">
+          <div class="label" id="sumFoodLabel">On the menu</div>
+          <div class="food-chips" id="sumFoodValue"></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="subtitle" id="sumClosing"></p>
+    <div class="btn-row">
+      <button class="btn ghost" id="copyBtn"></button>
+      <button class="btn big" id="finishBtn"></button>
+    </div>
+    <div class="hint" id="copyFeedback"></div>
+    <button class="back-link" data-back="3">← back</button>
+  </section>
+</div>
+
+<script>
+/* ===================================================================== */
+/*                                                                       */
+/*   💖  CONFIG — CHANGE ANY TEXT, EMOJI, FOOD OR PHOTO HERE  💖          */
+/*                                                                       */
+/*   • To add a photo: put your image (e.g. us.jpg) in the SAME folder   */
+/*     as this file, then set the photo to "us.jpg".                     */
+/*     You can also use a folder, e.g. "photos/us.jpg".                  */
+/*   • Leave a photo as ""  (empty) to show a friendly placeholder.      */
+/*                                                                       */
+/* ===================================================================== */
+const CONFIG = {
+
+  /* ---- PHOTO (set a file name, or leave "" for a placeholder) ---- */
+  photos: {
+    // The one spot for a cute photo — shown right after she says YES.
+    // Put an image in the photos folder and set it here, e.g. "photos/us.jpg".
+    celebrate: "photos/mk.jpg",
+  },
+
+  /* ---- STEP 1: The big question ---- */
+  ask: {
+    heading:  "Will you go on a date with me?",
+    subtitle: "pretty please? 🥺",
+    yes: "Yes",
+    no:  "No",
+    // funny lines that pop up as the "No" button keeps running away (optional)
+    noTeases: [
+      "No", "are you sure?", "really?", "think again 🥺",
+      "don't be shy", "pleaseeee", "you can't catch me", "just say yes 💕"
+    ],
+    // each time the No button runs away, the Yes button grows by yesGrow,
+    // up to yesMaxScale (big enough to almost fill the screen)
+    yesGrow: 0.6,
+    yesMaxScale: 14,
+  },
+
+  /* ---- STEP 1b: After she says YES ---- */
+  celebrate: {
+    heading:  "YEAH YEAH YEAH !!~ Let's goo",
+    subtitle: "I knew you'd say yes 😚",
+    next: "Next",
+  },
+
+  /* ---- STEP 2: Date & time ---- */
+  datetime: {
+    heading:  "When are you free, cutie?",
+    subtitle: "pick whatever works best for you 💗",
+    dateLabel: "Pick a date 🗓️",
+    dateDesc:  "Tap a day on the calendar below.",
+    timeLabel: "Pick a time ⏰",
+    timeDesc:  "What time should I pick you up?",
+    defaultHour: 7,      // default selected hour (1–12)
+    defaultMinute: "00", // "00","15","30","45" ...
+    defaultAmpm: "PM",   // "AM" or "PM"
+    next: "Nextttt",
+    hint: "Pick a date and time first 🥰",
+  },
+
+  /* ---- STEP 3: Food ---- */
+  food: {
+    heading:  "What are we feeling?",
+    subtitle: "",
+    // add / remove / rename freely — just keep the { name, emoji } shape
+    options: [
+      { name: "Pizza",        emoji: "🍕" },
+      { name: "Sushi",        emoji: "🍣" },
+      { name: "Burgers",      emoji: "🍔" },
+      { name: "Pasta",        emoji: "🍝" },
+      { name: "Tacos",        emoji: "🌮" },
+      { name: "Ramen",        emoji: "🍜" },
+      { name: "Fire Chicken", emoji: "🔥" },
+      { name: "Rice",         emoji: "🍚" },
+      { name: "Dessert",      emoji: "🍰" },
+    ],
+    next: "Next",
+    hint: "Pick at least one yummy thing 😋",
+  },
+
+  /* ---- STEP 4: Summary ---- */
+  summary: {
+    heading:  "It's a date! 🥰",
+    subtitle: "here's the plan, can't wait 💕",
+    dateLabel: "Date",
+    timeLabel: "Time",
+    foodLabel: "On the menu",
+    noFood: "Surprise me!",
+    closing: "Counting down the days already 💖",
+    finishButton: "Can't wait! 💖",
+    // tiny message shown after tapping the finish button
+    finishMessage: "It's official — see you then! 😘",
+    // the "copy the plan to send in chat" button
+    copyButton: "Copy to send 💌",
+    copiedLabel: "Copied! Paste it to me 💖",
+    copyIntro: "💕 It's a date! 💕",
+  },
+};
+/* ===================================================================== */
+/*            (you usually don't need to edit below this line)           */
+/* ===================================================================== */
+
+/* ---------- tiny helpers ---------- */
+const $ = (id) => document.getElementById(id);
+const state = { date: null, time: null, foods: [] };
+
+/* render a photo into a container (image or placeholder) */
+function renderPhoto(containerId, src, small) {
+  const el = $(containerId);
+  if (!el) return;
+  if (src && src.trim() !== "") {
+    el.className = "photo" + (small ? " small" : "");
+    el.innerHTML = '<img src="' + src + '" alt="our photo" />';
+  } else {
+    el.className = "photo placeholder" + (small ? " small" : "");
+    el.innerHTML = '<div class="big">📷</div><div>Add a photo here</div>';
+  }
+}
+
+/* ---------- background floating hearts ---------- */
+(function bgHearts() {
+  const wrap = $("bgHearts");
+  const emojis = ["💖","💕","🌸","💗","✨"];
+  for (let i = 0; i < 14; i++) {
+    const s = document.createElement("span");
+    s.textContent = emojis[i % emojis.length];
+    s.style.left = Math.random() * 100 + "vw";
+    s.style.fontSize = (16 + Math.random() * 18) + "px";
+    s.style.animationDuration = (9 + Math.random() * 9) + "s";
+    s.style.animationDelay = (-Math.random() * 12) + "s";
+    wrap.appendChild(s);
+  }
+})();
+
+/* ---------- step navigation ---------- */
+function goToStep(n) {
+  for (let i = 1; i <= 4; i++) {
+    $("step" + i).classList.toggle("hidden", i !== n);
+  }
+  document.querySelectorAll("#progress .dot").forEach((d, i) => {
+    d.classList.toggle("active", i < n);
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (n === 4) buildSummary();
+}
+
+/* ---------- falling hearts burst ---------- */
+function burstHearts(count) {
+  const emojis = ["💖","💕","💘","🌸","✨","💗","💞"];
+  for (let i = 0; i < count; i++) {
+    const h = document.createElement("div");
+    h.className = "fall";
+    h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    h.style.left = Math.random() * 100 + "vw";
+    h.style.fontSize = (18 + Math.random() * 22) + "px";
+    h.style.animationDuration = (2.4 + Math.random() * 2.2) + "s";
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 5200);
+  }
+}
+
+/* ===================================================================== */
+/*   STEP 1 — the question                                               */
+/* ===================================================================== */
+$("askHeading").textContent     = CONFIG.ask.heading;
+$("askSubtitle").textContent    = CONFIG.ask.subtitle;
+$("yesBtn").textContent         = CONFIG.ask.yes;
+$("noBtn").textContent          = CONFIG.ask.no;
+$("celebrateHeading").textContent  = CONFIG.celebrate.heading;
+$("celebrateSubtitle").textContent = CONFIG.celebrate.subtitle;
+$("celebrateNext").textContent     = CONFIG.celebrate.next;
+renderPhoto("celebratePhoto", CONFIG.photos.celebrate);
+
+const yesBtn = $("yesBtn");
+const noBtn  = $("noBtn");
+let teaseIndex = 0;
+let yesScale = 1;
+
+function dodge() {
+  // first time: detach from layout so it can roam freely
+  noBtn.style.position = "fixed";
+  const pad = 16;
+  const w = noBtn.offsetWidth;
+  const h = noBtn.offsetHeight;
+  const maxX = Math.max(pad, window.innerWidth  - w - pad);
+  const maxY = Math.max(pad, window.innerHeight - h - pad);
+  const x = pad + Math.random() * (maxX - pad);
+  const y = pad + Math.random() * (maxY - pad);
+  noBtn.style.left = x + "px";
+  noBtn.style.top  = y + "px";
+
+  // cheeky changing label
+  teaseIndex = (teaseIndex + 1) % CONFIG.ask.noTeases.length;
+  noBtn.textContent = CONFIG.ask.noTeases[teaseIndex];
+
+  // make "Yes" grow bigger and bigger — until it almost fills the screen
+  yesScale = Math.min(yesScale + CONFIG.ask.yesGrow, CONFIG.ask.yesMaxScale);
+  yesBtn.style.position = "relative";
+  yesBtn.style.zIndex = "60";
+  yesBtn.style.transformOrigin = "center center";
+  yesBtn.style.transform = "scale(" + yesScale + ")";
+}
+
+["mouseenter", "mouseover", "pointerenter"].forEach(ev =>
+  noBtn.addEventListener(ev, dodge)
+);
+// mobile / touch: run away the instant it's touched, and never register
+noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); dodge(); }, { passive: false });
+noBtn.addEventListener("click", (e) => { e.preventDefault(); dodge(); });
+
+yesBtn.addEventListener("click", () => {
+  $("askBlock").classList.add("hidden");
+  $("celebrateBlock").classList.remove("hidden");
+  noBtn.style.display = "none";
+  burstHearts(40);
+});
+
+/* ===================================================================== */
+/*   STEP 2 — calendar + time                                            */
+/* ===================================================================== */
+$("dtHeading").textContent   = CONFIG.datetime.heading;
+$("dtSubtitle").textContent  = CONFIG.datetime.subtitle;
+$("dateLabel").textContent   = CONFIG.datetime.dateLabel;
+$("dateDesc").textContent    = CONFIG.datetime.dateDesc;
+$("timeLabel").textContent   = CONFIG.datetime.timeLabel;
+$("timeDesc").textContent    = CONFIG.datetime.timeDesc;
+$("dtNext").textContent      = CONFIG.datetime.next;
+$("dtHint").textContent      = CONFIG.datetime.hint;
+
+// --- calendar ---
+const MONTHS = ["January","February","March","April","May","June",
+  "July","August","September","October","November","December"];
+const DOW = ["Su","Mo","Tu","We","Th","Fr","Sa"];
+let viewDate = new Date();
+viewDate.setDate(1);
+const today = new Date(); today.setHours(0,0,0,0);
+
+function renderCalendar() {
+  $("calMonth").textContent = MONTHS[viewDate.getMonth()] + " " + viewDate.getFullYear();
+  const grid = $("calGrid");
+  grid.innerHTML = "";
+  DOW.forEach(d => {
+    const c = document.createElement("div");
+    c.className = "cal-dow";
+    c.textContent = d;
+    grid.appendChild(c);
+  });
+  const firstDow = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay();
+  const days = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
+  for (let i = 0; i < firstDow; i++) {
+    const e = document.createElement("div");
+    e.className = "cal-day empty";
+    grid.appendChild(e);
+  }
+  for (let d = 1; d <= days; d++) {
+    const cell = document.createElement("button");
+    cell.className = "cal-day";
+    cell.textContent = d;
+    const cur = new Date(viewDate.getFullYear(), viewDate.getMonth(), d);
+    cur.setHours(0,0,0,0);
+    if (cur.getTime() === today.getTime()) cell.classList.add("today");
+    if (cur < today) {
+      cell.classList.add("disabled");
+    } else {
+      cell.addEventListener("click", () => {
+        state.date = cur;
+        renderCalendar();
+        hideHint("dtHint");
+      });
+    }
+    if (state.date && cur.getTime() === new Date(state.date).setHours(0,0,0,0)) {
+      cell.classList.add("selected");
+    }
+    grid.appendChild(cell);
+  }
+}
+$("calPrev").addEventListener("click", () => { viewDate.setMonth(viewDate.getMonth() - 1); renderCalendar(); });
+$("calNext").addEventListener("click", () => { viewDate.setMonth(viewDate.getMonth() + 1); renderCalendar(); });
+renderCalendar();
+
+// --- time selects ---
+(function buildTime() {
+  const h = $("selHour"), m = $("selMin");
+  for (let i = 1; i <= 12; i++) {
+    const o = document.createElement("option");
+    o.value = i; o.textContent = i;
+    h.appendChild(o);
+  }
+  for (let i = 0; i < 60; i += 5) {
+    const v = String(i).padStart(2, "0");
+    const o = document.createElement("option");
+    o.value = v; o.textContent = v;
+    m.appendChild(o);
+  }
+  h.value = CONFIG.datetime.defaultHour;
+  m.value = CONFIG.datetime.defaultMinute;
+  $("selAmpm").value = CONFIG.datetime.defaultAmpm;
+})();
+
+function getTimeString() {
+  return $("selHour").value + ":" + $("selMin").value + " " + $("selAmpm").value;
+}
+
+/* ===================================================================== */
+/*   STEP 3 — food                                                       */
+/* ===================================================================== */
+$("foodHeading").textContent  = CONFIG.food.heading;
+$("foodSubtitle").textContent = CONFIG.food.subtitle;
+if (!CONFIG.food.subtitle) $("foodSubtitle").style.display = "none";
+$("foodNext").textContent     = CONFIG.food.next;
+$("foodHint").textContent     = CONFIG.food.hint;
+
+(function buildFood() {
+  const grid = $("foodGrid");
+  CONFIG.food.options.forEach((opt) => {
+    const card = document.createElement("div");
+    card.className = "food-card";
+    card.innerHTML =
+      '<div class="check">✓</div>' +
+      '<div class="emoji">' + opt.emoji + '</div>' +
+      '<span class="name">' + opt.name + '</span>';
+    card.addEventListener("click", () => {
+      card.classList.toggle("selected");
+      const label = opt.emoji + " " + opt.name;
+      if (card.classList.contains("selected")) {
+        state.foods.push(label);
+      } else {
+        state.foods = state.foods.filter((f) => f !== label);
+      }
+      hideHint("foodHint");
+    });
+    grid.appendChild(card);
+  });
+})();
+
+/* ===================================================================== */
+/*   STEP 4 — summary                                                    */
+/* ===================================================================== */
+$("sumHeading").textContent   = CONFIG.summary.heading;
+$("sumSubtitle").textContent  = CONFIG.summary.subtitle;
+$("sumDateLabel").textContent = CONFIG.summary.dateLabel;
+$("sumTimeLabel").textContent = CONFIG.summary.timeLabel;
+$("sumFoodLabel").textContent = CONFIG.summary.foodLabel;
+$("sumClosing").textContent   = CONFIG.summary.closing;
+$("finishBtn").textContent    = CONFIG.summary.finishButton;
+$("copyBtn").textContent      = CONFIG.summary.copyButton;
+
+function buildSummary() {
+  state.time = getTimeString();
+  $("sumDateValue").textContent = state.date
+    ? new Date(state.date).toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+    : "—";
+  $("sumTimeValue").textContent = state.time || "—";
+
+  const box = $("sumFoodValue");
+  box.innerHTML = "";
+  if (state.foods.length === 0) {
+    const chip = document.createElement("span");
+    chip.className = "food-chip";
+    chip.textContent = CONFIG.summary.noFood;
+    box.appendChild(chip);
+  } else {
+    state.foods.forEach((f) => {
+      const chip = document.createElement("span");
+      chip.className = "food-chip";
+      chip.textContent = f;
+      box.appendChild(chip);
+    });
+  }
+}
+
+$("finishBtn").addEventListener("click", () => {
+  burstHearts(60);
+  $("sumClosing").textContent = CONFIG.summary.finishMessage;
+});
+
+/* build a tidy text version of the plan she can paste into chat */
+function buildShareText() {
+  const date = state.date
+    ? new Date(state.date).toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+    : "(no date picked)";
+  const foods = state.foods.length ? state.foods.join(", ") : CONFIG.summary.noFood;
+  return [
+    CONFIG.summary.copyIntro,
+    "📅 " + date,
+    "⏰ " + (state.time || getTimeString()),
+    "🍽️ " + foods,
+    "",
+    CONFIG.summary.closing,
+  ].join("\n");
+}
+
+/* copy to clipboard, with a fallback for older browsers */
+async function copyText(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (e) {}
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.top = "-1000px";
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  } catch (e) { return false; }
+}
+
+$("copyBtn").addEventListener("click", async () => {
+  const text = buildShareText();
+  const ok = await copyText(text);
+  const fb = $("copyFeedback");
+  if (!ok) {
+    // last resort (rare): show the text so it can always be copied by hand
+    window.prompt("Copy this and send it to me 💕", text);
+  }
+  fb.textContent = CONFIG.summary.copiedLabel;
+  fb.classList.add("show");
+  setTimeout(() => fb.classList.remove("show"), 2800);
+});
+
+/* ===================================================================== */
+/*   Wire up Next / Back buttons + validation                            */
+/* ===================================================================== */
+function showHint(id, host) {
+  $(id).classList.add("show");
+  if (host) { host.classList.add("shake"); setTimeout(() => host.classList.remove("shake"), 450); }
+}
+function hideHint(id) { $(id).classList.remove("show"); }
+
+document.querySelectorAll("[data-next]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const target = parseInt(btn.getAttribute("data-next"), 10);
+    if (target === 3 && !state.date) { showHint("dtHint", btn); return; }
+    if (target === 4 && state.foods.length === 0) { showHint("foodHint", btn); return; }
+    goToStep(target);
+  });
+});
+document.querySelectorAll("[data-back]").forEach((btn) => {
+  btn.addEventListener("click", () => goToStep(parseInt(btn.getAttribute("data-back"), 10)));
+});
+
+/* start */
+goToStep(1);
+</script>
+</body>
+</html>

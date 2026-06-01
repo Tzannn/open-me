@@ -1,0 +1,17 @@
+📷 Put your photo in this folder!
+
+There's one photo spot in the app — it shows right after she taps YES 🥰
+
+1. Drop your image file here, for example:
+      us.jpg
+
+2. Then open ../index.html, find the "photos:" section near the top of CONFIG,
+   and set the name, e.g.:
+
+      photos: {
+        celebrate: "photos/us.jpg",
+      },
+
+Tip: leave it as "" (empty) to show a placeholder instead.
+
+Supported formats: .jpg  .jpeg  .png  .gif  .webp
